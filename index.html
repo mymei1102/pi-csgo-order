@@ -23,33 +23,32 @@
   <label for="contact">聯絡方式 (Discord/Telegram/Email):</label>
   <input type="text" id="contact" placeholder="輸入聯絡資訊" required />
 
-  <label for="screenshot">匯款截圖（請用 Google 表單上傳）</label>
-  <small>請完成下方訂單後，點擊送出按鈕會打開 Google 表單，上傳截圖。</small>
-
   <button id="submitBtn">計算並提交訂單</button>
 
   <div id="rateStatus">正在取得 Pi 幣匯率...</div>
 
   <script>
-    let piRate = null; // USD / 1 Pi
+    let piRate = null; // Pi 幣 USD 價格
+    const FEE_RATE = 0.06; // 6% 手續費
 
+    // 取得現行匯率
     async function fetchPiRate() {
       try {
         const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=pi-network&vs_currencies=usd');
         const data = await res.json();
         piRate = data['pi-network']?.usd;
-        if (piRate && piRate > 0) {
-          document.getElementById('rateStatus').textContent = `目前 Pi 幣匯率：約 1 Pi = $${piRate} USD`;
+        if (piRate > 0) {
+          document.getElementById('rateStatus').textContent = `目前匯率：1 Pi ≈ $${piRate} USD`;
         } else {
-          document.getElementById('rateStatus').textContent = '無法取得匯率，請稍後再試。';
+          document.getElementById('rateStatus').textContent = '無法取得匯率';
         }
       } catch (e) {
-        document.getElementById('rateStatus').textContent = '取得匯率失敗，請檢查網路。';
+        document.getElementById('rateStatus').textContent = '取得匯率失敗';
       }
     }
 
-    function calculatePiAmount(usdPrice, feeRate = 0.06) {
-      return ((usdPrice / piRate) * (1 + feeRate)).toFixed(4);
+    function calculatePiAmount(usdPrice) {
+      return ((usdPrice / piRate) * (1 + FEE_RATE)).toFixed(4);
     }
 
     document.getElementById('submitBtn').addEventListener('click', () => {
@@ -61,30 +60,27 @@
         alert('請完整填寫所有欄位');
         return;
       }
-
       if (!piRate) {
-        alert('Pi 幣匯率尚未取得，請稍後再試');
+        alert('匯率尚未取得，請稍後再試');
         return;
       }
 
       const piAmount = calculatePiAmount(usdPrice);
 
-      // Google 表單欄位 entry ID
-      const entryUsdPrice = '1161051293';
-      const entrySteamId = '888876044';
+      alert(`應付 Pi 幣數量：${piAmount} π\n即將打開 Google 表單，上傳截圖並提交`);
+
+      // entry ID 對應你的表單欄位
+      const entryUsd = '1161051293';
+      const entrySteam = '888876044';
       const entryContact = '1612131371';
-      const entryPiAmount = '898102673';
+      const entryPi = '898102673';
 
-      // 組出 Google 表單預填網址
-      const formBaseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdVgmo8TGPP_4EeLI3Y86qTrmkr6YerGrL6v5j0yFjtaO3B8A/viewform';
-
-      const url = `${formBaseUrl}?usp=pp_url`
-        + `&entry.${entryUsdPrice}=${encodeURIComponent(usdPrice)}`
-        + `&entry.${entrySteamId}=${encodeURIComponent(steamId)}`
+      const formBase = 'https://docs.google.com/forms/d/e/1FAIpQLSdVgmo8TGPP_4EeLI3Y86qTrmkr6YerGrL6v5j0yFjtaO3B8A/viewform';
+      const url = `${formBase}?usp=pp_url`
+        + `&entry.${entryUsd}=${encodeURIComponent(usdPrice)}`
+        + `&entry.${entrySteam}=${encodeURIComponent(steamId)}`
         + `&entry.${entryContact}=${encodeURIComponent(contact)}`
-        + `&entry.${entryPiAmount}=${encodeURIComponent(piAmount)}`;
-
-      alert(`應付 Pi 幣數量：${piAmount} π\n即將打開表單，請上傳匯款截圖並提交訂單`);
+        + `&entry.${entryPi}=${encodeURIComponent(piAmount)}`;
 
       window.open(url, '_blank');
     });

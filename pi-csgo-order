@@ -1,0 +1,63 @@
+index.html
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pi 幣兌換 CSGO 造型訂單</title>
+  <style>
+    body { max-width: 480px; margin: 30px auto; font-family: Arial, sans-serif; padding: 0 20px; }
+    label { display: block; margin-top: 15px; }
+    input, button { width: 100%; padding: 8px; margin-top: 5px; }
+    button { font-size: 16px; cursor: pointer; }
+    #result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background: #f9f9f9; display: none; }
+  </style>
+</head>
+<body>
+  <h2>Pi 幣兌換 CSGO 造型訂單</h2>
+  
+  <label for="usdPrice">造型美元價格 (USD):</label>
+  <input type="number" id="usdPrice" placeholder="例如 100" min="0" step="0.01" required />
+  
+  <label for="piRate">Pi 幣匯率 (USD / 1 Pi):</label>
+  <input type="number" id="piRate" placeholder="例如 40" min="0.01" step="0.01" required />
+  
+  <label for="steamId">Steam ID:</label>
+  <input type="text" id="steamId" placeholder="輸入你的 Steam ID" required />
+  
+  <label for="contact">聯絡方式 (Discord/Telegram/Email):</label>
+  <input type="text" id="contact" placeholder="輸入聯絡資訊" required />
+  
+  <label for="screenshot">匯款截圖（PNG/JPG，最大10MB）:</label>
+  <input type="file" id="screenshot" accept="image/png, image/jpeg" required />
+  
+  <button id="submitBtn">計算並提交訂單</button>
+  
+  <div id="result"></div>
+  
+  <script>
+    function calculatePiAmount(usdPrice, piRate, feeRate = 0.06) {
+      return ((usdPrice / piRate) * (1 + feeRate)).toFixed(4);
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const usdPrice = parseFloat(document.getElementById('usdPrice').value);
+      const piRate = parseFloat(document.getElementById('piRate').value);
+      const steamId = document.getElementById('steamId').value.trim();
+      const contact = document.getElementById('contact').value.trim();
+      const screenshotFile = document.getElementById('screenshot').files[0];
+
+      if (!usdPrice || !piRate || !steamId || !contact || !screenshotFile) {
+        alert('請完整填寫所有欄位並上傳截圖');
+        return;
+      }
+
+      const piAmount = calculatePiAmount(usdPrice, piRate);
+
+      alert(`應付 Pi 幣數量：${piAmount} π\n請使用此數量匯款，並將截圖上傳`);
+
+      // 因為 Google 表單檔案上傳無法用 JS 自動送，請用 Google 表單提交匯款截圖
+      window.open('你的 Google 表單網址', '_blank');
+    });
+  </script>
+</body>
+</html>
